@@ -1,8 +1,8 @@
 package domain
 
 type Transaction struct {
-	transactionID int
-	paymentID     int
+	id        int
+	paymentID int
 }
 
 func NewTransaction(paymentID int) (*Transaction, error) {
