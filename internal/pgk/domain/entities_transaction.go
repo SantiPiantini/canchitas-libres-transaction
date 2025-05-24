@@ -1,12 +1,15 @@
 package domain
 
 type Transaction struct {
-	id        int
-	paymentID int
+	TransactionID string `db:"transaction_id" json:"transaction_id"`
+	PaymentID     string `db:"payment_id" json:"payment_id"`
+	UserID        string `db:"user_id" json:"user_id"`
 }
 
-func NewTransaction(paymentID int) (*Transaction, error) {
+func NewTransaction(transactionID, paymentID, userID string) *Transaction {
 	return &Transaction{
-		paymentID: paymentID,
-	}, nil
+		TransactionID: transactionID,
+		PaymentID:     paymentID,
+		UserID:        userID,
+	}
 }

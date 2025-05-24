@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	config, err := configuration.Load("../.env") //Iniciañizamos el archivo config y le cargamos la data que esta en el .env
+	config, err := configuration.Load("../.env") //Inicializamos el archivo config y le cargamos la data que esta en el .env
 	if err != nil {
 		panic(err)
 	}

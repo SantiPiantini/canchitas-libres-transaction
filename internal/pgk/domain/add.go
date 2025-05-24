@@ -1,6 +1,7 @@
 package domain
 
-func (s *Service) Add(transaction Transaction) error {
+import "context"
 
-	return nil
+func (s *Service) Add(ctx context.Context, transaction Transaction) error {
+	return s.StorageRepository.Add(ctx, transaction)
 }

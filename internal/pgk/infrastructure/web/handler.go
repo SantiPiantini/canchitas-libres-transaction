@@ -2,6 +2,8 @@ package web
 
 import (
 	"canchitas-libres-transaction/internal/pgk/domain"
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -10,7 +12,7 @@ import (
 type Service interface {
 	GetAll() ([]domain.Transaction, error)
 	GetByID(id int) (domain.Transaction, error)
-	Add(user domain.Transaction) error
+	Add(ctx context.Context, user domain.Transaction) error
 	Delete(id int) error
 	Update(id int, user domain.Transaction) error
 }
@@ -65,8 +67,20 @@ func (handler *Handler) GetTransactionByID(w http.ResponseWriter, r *http.Reques
 }
 
 func (handler *Handler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("create")
+	var tx domain.Transaction
+	if err := json.NewDecoder(r.Body).Decode(&tx); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	err := handler.Service.Add(r.Context(), tx)
+	if err != nil {
+		http.Error(w, "Failed to insert transaction", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Transaction recorded"))
 }
 
 func (handler *Handler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
