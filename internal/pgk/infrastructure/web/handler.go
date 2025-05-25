@@ -11,7 +11,7 @@ import (
 type Service interface {
 	GetAll(ctx context.Context) ([]domain.Transaction, error)
 	GetByID(ctx context.Context, id string) (domain.Transaction, error)
-	Add(ctx context.Context, user domain.Transaction) error
+	Add(ctx context.Context, user domain.Transaction) (string, error)
 	Delete(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, user domain.Transaction) error
 }
@@ -92,14 +92,14 @@ func (handler *Handler) CreateTransaction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err := handler.Service.Add(r.Context(), tx)
+	id, err := handler.Service.Add(r.Context(), tx)
 	if err != nil {
 		http.Error(w, "Failed to insert transaction", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Transaction recorded"))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"transaction_id": id})
 }
 
 func (handler *Handler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {

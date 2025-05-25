@@ -42,14 +42,15 @@ func (p *Postgres) GetByID(ctx context.Context, id string) (domain.Transaction, 
 	return tx, nil
 }
 
-func (p *Postgres) Add(ctx context.Context, transaction domain.Transaction) error {
-	_, err := p.DB.ExecContext(ctx,
-		"INSERT INTO transactions (transaction_id, payment_id, user_id) VALUES ($1, $2, $3)",
-		transaction.TransactionID,
-		transaction.PaymentID,
-		transaction.UserID,
-	)
-	return err
+func (p *Postgres) Add(ctx context.Context, transaction domain.Transaction) (string, error) {
+	var id string
+	err := p.DB.QueryRowContext(ctx,
+		"INSERT INTO transactions (payment_id, user_id) VALUES ($1, $2) RETURNING transaction_id",
+		transaction.PaymentID, transaction.UserID).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
 func (p *Postgres) Delete(ctx context.Context, id string) error {
