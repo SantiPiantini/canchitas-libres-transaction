@@ -1,5 +1,7 @@
 package domain
 
-func (s *Service) GetByID(id int) (Transaction, error) {
-	return Transaction{}, nil
+import "context"
+
+func (s *Service) GetByID(ctx context.Context, id string) (Transaction, error) {
+	return s.StorageRepository.GetByID(ctx, id)
 }

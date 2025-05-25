@@ -32,8 +32,14 @@ func (p *Postgres) GetAll(ctx context.Context) ([]domain.Transaction, error) {
 	return transactions, nil
 }
 
-func (p *Postgres) GetByID(id int) (domain.Transaction, error) {
-	return domain.Transaction{}, nil
+func (p *Postgres) GetByID(ctx context.Context, id string) (domain.Transaction, error) {
+	var tx domain.Transaction
+	err := p.DB.QueryRowContext(ctx, "SELECT transaction_id, payment_id, user_id FROM transactions WHERE transaction_id = $1::uuid", id).
+		Scan(&tx.TransactionID, &tx.PaymentID, &tx.UserID)
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+	return tx, nil
 }
 
 func (p *Postgres) Add(ctx context.Context, transaction domain.Transaction) error {

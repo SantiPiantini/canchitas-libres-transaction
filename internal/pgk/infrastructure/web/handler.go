@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	GetAll(ctx context.Context) ([]domain.Transaction, error)
-	GetByID(id int) (domain.Transaction, error)
+	GetByID(ctx context.Context, id string) (domain.Transaction, error)
 	Add(ctx context.Context, user domain.Transaction) error
 	Delete(ctx context.Context, id string) error
 	Update(id int, user domain.Transaction) error
@@ -68,8 +68,22 @@ func (handler *Handler) GetAllTransactions(w http.ResponseWriter, r *http.Reques
 }
 
 func (handler *Handler) GetTransactionByID(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("getbyid")
-	w.WriteHeader(http.StatusOK)
+	matches := getOneRegexp.FindStringSubmatch(r.URL.Path)
+	if len(matches) < 2 {
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
+
+	id := matches[1] // UUID como string
+
+	tx, err := handler.Service.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Transaction not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tx)
 }
 
 func (handler *Handler) CreateTransaction(w http.ResponseWriter, r *http.Request) {

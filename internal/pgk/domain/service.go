@@ -7,7 +7,7 @@ import (
 
 type StorageRepository interface {
 	GetAll(ctx context.Context) ([]Transaction, error)
-	GetByID(id int) (Transaction, error)
+	GetByID(ctx context.Context, id string) (Transaction, error)
 	Add(ctx context.Context, transaction Transaction) error
 	Delete(ctx context.Context, id string) error
 	Update(ctx context.Context, id int, transaction Transaction) error
