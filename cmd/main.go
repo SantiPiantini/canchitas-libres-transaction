@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println("Conexión a la base de datos exitosa")
 	//database connection
 	database, err := database2.NewDBConnection(context.Background(), config)
 	if err != nil {
