@@ -10,7 +10,7 @@ type StorageRepository interface {
 	GetByID(ctx context.Context, id string) (Transaction, error)
 	Add(ctx context.Context, transaction Transaction) error
 	Delete(ctx context.Context, id string) error
-	Update(ctx context.Context, id int, transaction Transaction) error
+	Update(ctx context.Context, id string, transaction Transaction) error
 }
 
 type Service struct {

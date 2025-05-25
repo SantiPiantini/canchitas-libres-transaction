@@ -57,6 +57,9 @@ func (p *Postgres) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (p *Postgres) Update(ctx context.Context, id int, transaction domain.Transaction) error {
-	return nil
+func (p *Postgres) Update(ctx context.Context, id string, transaction domain.Transaction) error {
+	_, err := p.DB.ExecContext(ctx,
+		"UPDATE transactions SET transaction_id = $1, payment_id = $2, user_id = $3 WHERE transaction_id = $4::uuid",
+		transaction.TransactionID, transaction.PaymentID, transaction.UserID, id)
+	return err
 }

@@ -4,7 +4,6 @@ import (
 	"canchitas-libres-transaction/internal/pgk/domain"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"regexp"
 )
@@ -14,7 +13,7 @@ type Service interface {
 	GetByID(ctx context.Context, id string) (domain.Transaction, error)
 	Add(ctx context.Context, user domain.Transaction) error
 	Delete(ctx context.Context, id string) error
-	Update(id int, user domain.Transaction) error
+	Update(ctx context.Context, id string, user domain.Transaction) error
 }
 type Handler struct {
 	Service Service
@@ -123,6 +122,26 @@ func (handler *Handler) DeleteTransaction(w http.ResponseWriter, r *http.Request
 }
 
 func (handler *Handler) UpdateTransaction(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("update")
-	w.WriteHeader(http.StatusCreated)
+	matches := getOneRegexp.FindStringSubmatch(r.URL.Path)
+	if len(matches) < 2 {
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
+
+	id := matches[1]
+
+	var tx domain.Transaction
+	if err := json.NewDecoder(r.Body).Decode(&tx); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	err := handler.Service.Update(r.Context(), id, tx)
+	if err != nil {
+		http.Error(w, "Failed to update transaction", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Transaction updated successfully"))
 }
