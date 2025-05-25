@@ -1,5 +1,7 @@
 package domain
 
-func (s *Service) Delete(id int) error {
-	return nil
+import "context"
+
+func (s *Service) Delete(ctx context.Context, id string) error {
+	return s.StorageRepository.Delete(ctx, id)
 }

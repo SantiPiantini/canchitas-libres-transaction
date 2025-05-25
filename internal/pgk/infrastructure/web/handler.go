@@ -10,10 +10,10 @@ import (
 )
 
 type Service interface {
-	GetAll() ([]domain.Transaction, error)
+	GetAll(ctx context.Context) ([]domain.Transaction, error)
 	GetByID(id int) (domain.Transaction, error)
 	Add(ctx context.Context, user domain.Transaction) error
-	Delete(id int) error
+	Delete(ctx context.Context, id string) error
 	Update(id int, user domain.Transaction) error
 }
 type Handler struct {
@@ -28,7 +28,7 @@ func NewHandler(service Service) *Handler {
 
 var (
 	getAllRegexp = regexp.MustCompile(`^\/transaction\/?$`)
-	getOneRegexp = regexp.MustCompile(`^\/transaction\/(\d+)$`)
+	getOneRegexp = regexp.MustCompile(`^\/transaction\/([a-zA-Z0-9\-]+)$`)
 )
 
 func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +57,14 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *Handler) GetAllTransactions(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("getall")
-	w.WriteHeader(http.StatusOK)
+	transactions, err := handler.Service.GetAll(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to get transactions", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(transactions)
 }
 
 func (handler *Handler) GetTransactionByID(w http.ResponseWriter, r *http.Request) {
@@ -84,8 +90,22 @@ func (handler *Handler) CreateTransaction(w http.ResponseWriter, r *http.Request
 }
 
 func (handler *Handler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("delete")
+	matches := getOneRegexp.FindStringSubmatch(r.URL.Path)
+	if len(matches) < 2 {
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
+
+	id := matches[1] // UUID como string
+
+	err := handler.Service.Delete(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Failed to delete transaction", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Transaction deleted successfully"))
 }
 
 func (handler *Handler) UpdateTransaction(w http.ResponseWriter, r *http.Request) {

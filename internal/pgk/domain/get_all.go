@@ -1,5 +1,7 @@
 package domain
 
-func (s *Service) GetAll() ([]Transaction, error) {
-	return []Transaction{}, nil
+import "context"
+
+func (s *Service) GetAll(ctx context.Context) ([]Transaction, error) {
+	return s.StorageRepository.GetAll(ctx)
 }
